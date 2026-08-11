@@ -9,6 +9,8 @@ services:
       - "9001:9001/udp"
     environment:
       - PYTHONUNBUFFERED=1
+    tty: true
+    stdin_open: true
     command: python run_network.py
     restart: unless-stopped
     healthcheck:
