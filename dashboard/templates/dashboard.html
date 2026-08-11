@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EV-COMM — Emergency Vehicle Communication Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/static/dashboard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">EV</div>
+      <div class="brand-text"><h1>EV&#8209;COMM</h1><span>EMERGENCY VEHICLE COMMUNICATION &amp; TRAFFIC PRIORITY NETWORK — LIVE SIM</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="stat"><span class="val" id="stat-sent">0</span><span class="lbl">Packets Sent</span></div>
+      <div class="stat"><span class="val" id="stat-drop">0</span><span class="lbl">Dropped</span></div>
+      <div class="stat"><span class="val" id="stat-latency">—</span><span class="lbl">Latency</span></div>
+      <div class="stat"><span class="val" id="stat-active">0</span><span class="lbl">Active Units</span></div>
+      <div class="status-pill" id="net-status"><span class="dot"></span>NETWORK OPERATIONAL</div>
+      <div class="clock" id="clock">00:00:00</div>
+      <a href="/logout" style="color:var(--text-faint); font-size:10px; text-decoration:none; text-transform:uppercase; font-family:var(--mono);">Logout</a>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="eyebrow">Live view · Dijkstra shortest path</div><h2>Network Topology</h2></div>
+        <button class="btn" id="btn-reset">Reset Network</button>
+      </div>
+      <div class="topo-wrap">
+        <div class="topo-hint">Click a junction to toggle it up/down</div>
+        <svg viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet">
+          <path class="control-link" d="M450,70 L150,230" /><path class="control-link" d="M450,70 L350,230" />
+          <path class="control-link" d="M450,70 L550,230" /><path class="control-link" d="M450,70 L250,380" />
+          <path class="control-link" d="M450,70 L650,410" />
+
+          <path class="road" id="e-J1-J2" d="M150,230 L350,230" />
+          <path class="road" id="e-J2-J3" d="M350,230 L550,230" />
+          <path class="road" id="e-J3-HOSPITAL" d="M550,230 L650,410" />
+          <path class="road" id="e-J1-J4" d="M150,230 L250,380" />
+          <path class="road" id="e-J4-HOSPITAL" d="M250,380 L650,410" />
+
+          <text class="edge-weight" id="w-J1-J2" x="250" y="222" text-anchor="middle">2</text>
+          <text class="edge-weight" id="w-J2-J3" x="450" y="222" text-anchor="middle">2</text>
+          <text class="edge-weight" id="w-J3-HOSPITAL" x="618" y="310" text-anchor="middle">2</text>
+          <text class="edge-weight" id="w-J1-J4" x="180" y="298" text-anchor="middle">4</text>
+          <text class="edge-weight" id="w-J4-HOSPITAL" x="450" y="388" text-anchor="middle">4</text>
+
+          <g id="amb-layer"></g>
+
+          <circle class="node-circle server" cx="450" cy="70" r="26" />
+          <text class="node-label" x="450" y="75" text-anchor="middle">SRV</text>
+          <text class="node-label" x="450" y="34" text-anchor="middle" fill="#4FA3FF" font-size="10">CONTROL SERVER</text>
+
+          <circle class="node-glow" cx="150" cy="230" r="30" id="glow-J1"/>
+          <circle class="node-circle up clickable" cx="150" cy="230" r="24" id="node-J1" onclick="toggleNode('J1')"/>
+          <text class="node-label" x="150" y="235" text-anchor="middle">J1</text>
+
+          <circle class="node-glow" cx="350" cy="230" r="30" id="glow-J2"/>
+          <circle class="node-circle up clickable" cx="350" cy="230" r="24" id="node-J2" onclick="toggleNode('J2')"/>
+          <text class="node-label" x="350" y="235" text-anchor="middle">J2</text>
+
+          <circle class="node-glow" cx="550" cy="230" r="30" id="glow-J3"/>
+          <circle class="node-circle up clickable" cx="550" cy="230" r="24" id="node-J3" onclick="toggleNode('J3')"/>
+          <text class="node-label" x="550" y="235" text-anchor="middle">J3</text>
+
+          <circle class="node-glow" cx="250" cy="380" r="30" id="glow-J4"/>
+          <circle class="node-circle up clickable" cx="250" cy="380" r="24" id="node-J4" onclick="toggleNode('J4')"/>
+          <text class="node-label" x="250" y="385" text-anchor="middle">J4</text>
+
+          <circle class="node-circle hospital" cx="650" cy="410" r="28" />
+          <text class="node-label" x="650" y="415" text-anchor="middle" font-size="16">&#127973;</text>
+          <text class="node-label" x="650" y="450" text-anchor="middle" fill="#A78BFA" font-size="10">CITY HOSPITAL</text>
+        </svg>
+        <div class="topo-legend">
+          <span><i class="legend-swatch" style="background:var(--green)"></i>Online / active route</span>
+          <span><i class="legend-swatch" style="background:var(--red)"></i>Down</span>
+          <span><i class="legend-swatch" style="background:var(--blue)"></i>Control link</span>
+          <span><i class="legend-swatch" style="background:var(--purple)"></i>Hospital</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="dispatch">DISPATCH</button>
+        <button class="tab-btn" data-tab="traf">TRAFFIC</button>
+        <button class="tab-btn" data-tab="net">NETWORK</button>
+        <button class="tab-btn" data-tab="stats">ANALYTICS</button>
+      </div>
+      <div class="tab-content">
+
+        <div class="tab-pane active" id="pane-dispatch">
+          <label>Origin junction</label>
+          <select id="in-origin"><option value="J1">Junction 1</option><option value="J2">Junction 2</option><option value="J3">Junction 3</option><option value="J4">Junction 4</option></select>
+          <label>Priority</label>
+          <select id="in-priority"><option value="CRITICAL">Critical</option><option value="STABLE">Stable</option></select>
+          <button class="btn primary" id="btn-dispatch">Dispatch ambulance</button>
+          <label style="margin-top:16px;">Active queue (priority order)</label>
+          <div class="queue-list" id="queue-list"><div class="queue-empty">No active units. Dispatch one above.</div></div>
+        </div>
+
+        <div class="tab-pane" id="pane-traf">
+          <div class="junction-list" id="junction-list"></div>
+          <div class="field-row" style="margin-top:12px;"><span class="k">Route computation</span><span class="v">Dijkstra, live</span></div>
+        </div>
+
+        <div class="tab-pane" id="pane-net">
+          <label>Network load / congestion</label>
+          <div class="slider-row"><input type="range" id="in-congestion" min="0" max="100" value="0"><span class="slider-val" id="congestion-val">0%</span></div>
+          <div class="note">Above <b>70%</b> load, the J2–J3 link becomes congested (3&#215; weight), causing Dijkstra to prefer the J1–J4–Hospital path even while J2 is online.</div>
+          <div class="kpi-grid">
+            <div class="kpi"><div class="val" id="kpi-loss">2.0%</div><div class="lbl">Packet loss rate</div></div>
+            <div class="kpi"><div class="val" id="kpi-retrans">0</div><div class="lbl">Retransmits</div></div>
+          </div>
+          <label>Latency (live, ms)</label>
+          <canvas id="latency-canvas"></canvas>
+        </div>
+
+        <div class="tab-pane" id="pane-stats">
+          <div class="kpi-grid">
+            <div class="kpi"><div class="val" id="kpi-total">0</div><div class="lbl">Requests dispatched</div></div>
+            <div class="kpi"><div class="val" id="kpi-arrived">0</div><div class="lbl">Arrived</div></div>
+            <div class="kpi"><div class="val" id="kpi-avgresp">—</div><div class="lbl">Avg response cost</div></div>
+            <div class="kpi"><div class="val" id="kpi-busiest">—</div><div class="lbl">Busiest junction</div></div>
+            <div class="kpi"><div class="val" id="kpi-nodes">4/4</div><div class="lbl">Junctions online</div></div>
+            <div class="kpi"><div class="val" id="kpi-uptime">100%</div><div class="lbl">Uptime</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- Chaos Panel -->
+    <div class="panel" style="margin-top: 14px;">
+      <div class="panel-head">
+        <div><div class="eyebrow">Failure Injection</div><h2>Chaos Controls</h2></div>
+      </div>
+      <div class="tab-content" style="display:flex; gap: 10px;">
+        <button class="btn" id="btn-chaos-degrade">Degrade Random Node</button>
+        <button class="btn" id="btn-chaos-kill">Kill Random Node</button>
+        <button class="btn" id="btn-chaos-flood">Flood Requests (5)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="terminal">
+    <div class="terminal-head"><h2>&gt; PACKET_LOG — live capture</h2><div class="traffic-lights"><span class="tl-1"></span><span class="tl-2"></span><span class="tl-3"></span></div></div>
+    <div class="log-body" id="log-body"></div>
+  </div>
+
+  <div class="footnote">EV-COMM SIMULATION PROTOTYPE — COMPUTER NETWORKS MINI PROJECT · ROUTES COMPUTED LIVE WITH DIJKSTRA · NOT CONNECTED TO REAL TRAFFIC INFRASTRUCTURE</div>
+</div>
+
+<script src="/static/dashboard.js"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EV-COMM Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { background: #0B0F14; color: #E6EDF3; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  .login-box { background: #121822; border: 1px solid #1E2733; padding: 30px; border-radius: 10px; width: 300px; text-align: center; }
+  .login-box h2 { margin-top: 0; font-size: 18px; letter-spacing: 0.5px; margin-bottom: 20px; }
+  input { width: 100%; box-sizing: border-box; background: #171F2A; border: 1px solid #1E2733; color: #E6EDF3; padding: 10px; border-radius: 5px; margin-bottom: 15px; outline: none; }
+  input:focus { border-color: #4FA3FF; }
+  button { width: 100%; padding: 10px; border: none; border-radius: 5px; background: linear-gradient(135deg, #FF4D4D, #B32D2D); color: #fff; font-weight: 600; cursor: pointer; }
+  button:hover { filter: brightness(1.1); }
+  .error { color: #FF4D4D; font-size: 12px; margin-bottom: 15px; }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <h2>EV-COMM SECURE ACCESS</h2>
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+  <form method="POST">
+    <input type="password" name="password" placeholder="Enter Access Code" required autofocus>
+    <button type="submit">LOGIN</button>
+  </form>
+</div>
+</body>
+</html>

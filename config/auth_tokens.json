@@ -1,0 +1,13 @@
+{
+  "tokens": {
+    "A01": "amb-token-alpha-001",
+    "A02": "amb-token-alpha-002",
+    "A03": "amb-token-alpha-003",
+    "J1": "jnc-token-j1-secure",
+    "J2": "jnc-token-j2-secure",
+    "J3": "jnc-token-j3-secure",
+    "J4": "jnc-token-j4-secure",
+    "J5": "jnc-token-j5-secure",
+    "HOSPITAL_1": "hosp-token-h1-secure"
+  }
+}

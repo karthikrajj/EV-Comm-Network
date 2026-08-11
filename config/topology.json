@@ -1,0 +1,16 @@
+{
+  "nodes": {
+    "J1": {"x": 150, "y": 230},
+    "J2": {"x": 350, "y": 230},
+    "J3": {"x": 550, "y": 230},
+    "J4": {"x": 250, "y": 380},
+    "HOSPITAL_1": {"x": 650, "y": 410}
+  },
+  "edges": [
+    {"from": "J1", "to": "J2", "weight": 2, "road_type": 1},
+    {"from": "J2", "to": "J3", "weight": 2, "road_type": 1},
+    {"from": "J3", "to": "HOSPITAL_1", "weight": 2, "road_type": 1},
+    {"from": "J1", "to": "J4", "weight": 4, "road_type": 1.2},
+    {"from": "J4", "to": "HOSPITAL_1", "weight": 4, "road_type": 1.2}
+  ]
+}
