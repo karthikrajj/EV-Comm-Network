@@ -122,7 +122,7 @@ class HospitalClient:
             self.sock.sendall(serialize(ack))
 
             # Auto-send HOSPITAL_ACK (in a real system this would be manual)
-            time.sleep(1)  # Simulate preparation time
+            time.sleep(1)  # ER Preparation time
             self._send_hospital_ack(amb_id, req_id)
 
     def _send_hospital_ack(self, ambulance_id: str, req_id: int):

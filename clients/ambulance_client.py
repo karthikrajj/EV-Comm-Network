@@ -3,7 +3,7 @@ EV-Comm Ambulance Client
 =========================
 TCP client that connects to the central server, authenticates,
 sends EMERGENCY_REQUEST packets, and receives route updates.
-Demonstrates: TCP reliable delivery, ACK/NACK, retransmission.
+Implements: TCP reliable delivery, ACK/NACK, retransmission.
 """
 
 import socket

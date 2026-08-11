@@ -1,14 +1,14 @@
 """
-EV-Comm Demo Launcher
-======================
-One-click script that starts all components for the demo:
+EV-Comm Network Launcher
+========================
+One-click script that starts all components for the network:
 1. Dashboard + Network Server (Flask-SocketIO)
 2. Junction nodes (J1-J5)
 3. Hospital
 4. Ambulance (interactive)
 
 Usage:
-    python run_demo.py
+    python run_network.py
 """
 
 import subprocess
@@ -26,7 +26,7 @@ def main():
 
     print()
     print("=" * 60)
-    print("   🚑 EV-Comm Demo Launcher")
+    print("   🚑 EV-Comm Network Launcher")
     print("   Emergency Vehicle Communication Network")
     print("=" * 60)
     print()
@@ -75,7 +75,7 @@ def main():
     print("     r                          — Show route")
     print("     q                          — Quit")
     print()
-    print("   To simulate junction failure:")
+    print("   To inject junction failure:")
     print("     Kill any junction terminal with Ctrl+C")
     print("     Watch the dashboard reroute in real time!")
     print("=" * 60)

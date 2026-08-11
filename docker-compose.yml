@@ -9,6 +9,7 @@ services:
       - "9001:9001/udp"
     environment:
       - PYTHONUNBUFFERED=1
+    command: python run_network.py
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]

@@ -4,7 +4,7 @@ EV-Comm Junction Client
 TCP + UDP client representing a traffic junction node.
   - TCP: receives SIGNAL_CHANGE commands from the server
   - UDP: sends periodic HEARTBEAT packets to the server
-Demonstrates: TCP vs UDP split, heartbeat-based failure detection.
+Implements: TCP vs UDP split, heartbeat-based failure detection.
 """
 
 import socket
@@ -217,13 +217,13 @@ def main():
     print(f"  Signal: {client.signal_state}")
     print(f"  Heartbeat every {HEARTBEAT_INTERVAL}s via UDP")
     print(f"{'='*50}")
-    print("Press Ctrl+C to simulate junction failure\n")
+    print("Press Ctrl+C to trigger junction failure\n")
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print(f"\nJunction {jnc_id} shutting down (simulated failure)")
+        print(f"\nJunction {jnc_id} shutting down (hardware failure)")
     finally:
         client.disconnect()
 

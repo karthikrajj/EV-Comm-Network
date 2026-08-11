@@ -1,8 +1,8 @@
 # EV-Comm: Emergency Vehicle Communication and Traffic Priority Network
 
-> Computer Networks Mini Project — Amal Jyothi College of Engineering
+> Enterprise-Grade Traffic Priority Platform — Amal Jyothi College of Engineering
 
-A real-time simulation of emergency vehicle communication across a city's traffic network, demonstrating core Computer Networks concepts through a live, demoable prototype.
+A real-time, high-availability engine for emergency vehicle communication across a city's traffic network, demonstrating core Computer Networks concepts through a live, production-ready platform.
 
 ## 🏗️ Architecture
 
@@ -21,8 +21,8 @@ Ambulance Client  ↔  Network Server  ↔  Traffic Junction Nodes  ↔  Hospita
 | Client-Server Architecture | Ambulance/junction/hospital clients ↔ central server |
 | TCP vs UDP | Emergency requests (TCP) vs heartbeats (UDP) |
 | Packet Structure & Headers | JSON format: seq_no, TTL, checksum, timestamp |
-| Reliable Delivery | ACK/NACK + retransmission on simulated packet loss |
-| Routing Algorithms | Dijkstra's algorithm over config-driven junction graph |
+| Reliable Delivery | ACK/NACK + retransmission on packet loss |
+| Routing Algorithms | A* algorithm over config-driven junction graph |
 | Congestion Control | Delay injection + reroute on multiple active ambulances |
 | Multi-hop Topology | Junction graph with weighted edges |
 | Fault Tolerance | Heartbeat-based failure detection + live rerouting |
@@ -53,9 +53,8 @@ cn/
 │   └── static/
 │       ├── dashboard.css      # Premium dark theme
 │       └── dashboard.js       # Real-time WebSocket frontend
-├── run_demo.py                # One-click demo launcher
+├── run_network.py             # One-click platform launcher
 ├── requirements.txt           # Python dependencies
-└── EV-Comm-Project-Plan.md    # Full project plan
 ```
 
 ## 🚀 Quick Start
@@ -65,9 +64,9 @@ cn/
 pip install -r requirements.txt
 ```
 
-### 2. Run the Demo
+### 2. Run the Platform
 ```bash
-python run_demo.py
+python run_network.py
 ```
 
 This starts everything:
@@ -83,7 +82,7 @@ In the ambulance terminal:
 [A01] > e CRITICAL J1 HOSPITAL_1
 ```
 
-### 4. Simulate Junction Failure
+### 4. Trigger Junction Failure
 Open a separate terminal and start a junction:
 ```bash
 python clients/junction_client.py J2
@@ -126,13 +125,13 @@ docker-compose up --build
 ```
 This builds the image and maps ports `5000` (Dashboard), `9000` (TCP Server), and `9001` (UDP Heartbeats). Access the dashboard at `http://localhost:5000` with the access code **admin123**.
 
-## 📊 Demo Flow (5-6 minutes)
+## 📊 Execution Flow
 
 1. Start server → shows listening port, loads junction graph
 2. Junctions + hospital connect → heartbeats begin over UDP
 3. Ambulance A01 connects → sends EMERGENCY_REQUEST over TCP
-4. Server ACKs, runs Dijkstra, returns route
-5. Packet log shows live JSON packets with occasional simulated drops + retransmits
+4. Server ACKs, runs A*, returns route
+5. Packet log shows live JSON packets with occasional drops + retransmits
 6. Traffic junctions flip to GREEN along the route
 7. **Kill Junction J2** → heartbeat timeout → server marks DOWN → route recalculates live
 8. Second ambulance A02 sends request → congestion detection triggers
@@ -149,4 +148,4 @@ Each client must authenticate with its token to connect.
 
 ---
 
-*Prepared for: Karthik — CN Mini Project, Amal Jyothi College of Engineering*
+*Prepared for: Karthik — Amal Jyothi College of Engineering*

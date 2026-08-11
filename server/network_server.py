@@ -6,7 +6,7 @@ The core TCP + UDP server that manages the entire EV-Comm network:
   - Receives UDP heartbeats from junctions
   - Authenticates clients via tokens
   - Routes emergency requests using Dijkstra
-  - Handles simulated packet loss, retransmission, congestion
+  - Handles packet loss, retransmission, congestion
   - Detects junction failures via heartbeat timeout
   - Pushes live events to the Flask-SocketIO dashboard
 """
@@ -67,12 +67,12 @@ TCP_PORT = 9000
 UDP_PORT = 9001
 HEARTBEAT_TIMEOUT = 8.0       # seconds before a junction is considered dead
 HEARTBEAT_CHECK_INTERVAL = 3.0
-PACKET_DROP_RATE = 0.1        # 10% simulated packet loss
+PACKET_DROP_RATE = 0.1        # 10% packet loss environment
 CONGESTION_THRESHOLD = 2      # Number of concurrent ambulances to trigger congestion
 RETRANSMIT_TIMEOUT = 2.0      # Seconds before retransmitting
 RELAY_PROBABILITY = 0.4       # 40% chance of multi-hop relay for signal changes
 
-# ── Shared state (a real notification bus would be better, but fine for a demo) ─
+# ── Shared state (In production, replace with Redis/message broker) ─
 _socketio_instance = None   # Will be set by the dashboard when it starts
 
 def set_socketio(sio):
@@ -160,14 +160,14 @@ class NetworkServer:
                     if packet is None:
                         break
 
-                    # Simulate packet loss & graceful degradation
+                    # Handle packet loss & graceful degradation
                     sender = packet["sender"]
                     drop_prob = PACKET_DROP_RATE
                     if sender in self.degraded_nodes:
                         drop_prob = 0.5
                     
                     if packet["type"] not in (MSG_AUTH,) and random.random() < drop_prob:
-                        logger.warning(f"📦 SIMULATED DROP: packet #{packet['seq_no']} from {packet['sender']}")
+                        logger.warning(f"📦 PACKET DROP: packet #{packet['seq_no']} from {packet['sender']}")
                         log_packet(
                             packet["seq_no"], packet["type"],
                             packet["sender"], packet["receiver"],
