@@ -133,11 +133,19 @@ function renderQueue(){
 }
 
 function renderStats(){
-  if(!currentState || !currentState.stats) return;
-  const stats = currentState.stats;
+  if(!currentState || !currentState.analytics) return;
+  const stats = currentState.analytics;
   document.getElementById('kpi-total').textContent = stats.total_requests;
   document.getElementById('kpi-arrived').textContent = stats.successful_requests;
   document.getElementById('kpi-avgresp').textContent = stats.avg_response_time > 0 ? stats.avg_response_time.toFixed(1) + 's' : '—';
+  
+  document.getElementById('stat-sent').textContent = stats.total_packets || 0;
+  
+  const elDropped = document.getElementById('stat-dropped');
+  if (elDropped) elDropped.textContent = stats.dropped_packets || 0;
+  
+  const elLatency = document.getElementById('stat-latency');
+  if (elLatency) elLatency.textContent = Math.round(stats.avg_latency || 0) + ' ms';
   
   let busiest = stats.busiest_junction || '—';
   document.getElementById('kpi-busiest').textContent = busiest;
@@ -226,38 +234,35 @@ socket.on('state_update', (data) => {
     renderQueue();
     renderStats();
     syncAmbulances();
+    renderLogs();
 });
 
-socket.on('packet_log', (data) => {
+function renderLogs() {
+    if(!currentState || !currentState.packet_log) return;
     const logBody = document.getElementById('log-body');
-    const ts = new Date(data.timestamp).toLocaleTimeString('en-GB');
+    if (!logBody) return;
+    logBody.innerHTML = '';
     
-    let typeMap = { 'EMERGENCY_REQUEST':['REQ','tag-req'], 'ACK':['ACK','tag-ack'], 'HEARTBEAT':['HB','tag-hb'], 'ROUTE_UPDATE':['RTE','tag-route'] };
-    let mapping = typeMap[data.type] || ['SYS','tag-sys'];
-    const [tag, cls] = mapping;
+    // Sort logs oldest to newest for appending
+    const logs = [...currentState.packet_log].reverse();
     
-    // Structured JSON log output
-    const logData = {
-        seq: data.seq_no,
-        sender: data.sender,
-        recv: data.receiver,
-        payload: data.payload
-    };
-    
-    const line = document.createElement('div'); line.className='log-line';
-    line.innerHTML = `<span class="ts">[${ts}]</span> <span class="tag ${cls}">${tag.padEnd(4)}</span> <span style="color:#A78BFA">${data.type}</span> ${JSON.stringify(logData)}`;
-    logBody.appendChild(line); logBody.scrollTop = logBody.scrollHeight;
-    while(logBody.children.length>60) logBody.removeChild(logBody.firstChild);
-    
-    sent++; document.getElementById('stat-sent').textContent = sent;
-    
-    if(data.type === 'HEARTBEAT' && data.latency_ms) {
-        latencyHistory.push(data.latency_ms);
-        if(latencyHistory.length>40) latencyHistory.shift();
-        document.getElementById('stat-latency').textContent = Math.round(data.latency_ms) + ' ms';
-        drawLatency();
-    }
-});
+    logs.forEach(data => {
+        const ts = new Date(data.timestamp * 1000).toLocaleTimeString('en-GB');
+        let typeMap = { 'EMERGENCY_REQUEST':['REQ','tag-req'], 'ACK':['ACK','tag-ack'], 'HEARTBEAT':['HB','tag-hb'], 'ROUTE_UPDATE':['RTE','tag-route'] };
+        let mapping = typeMap[data.type] || ['SYS','tag-sys'];
+        const [tag, cls] = mapping;
+        
+        let typeColor = data.dropped ? '#EF4444' : '#A78BFA';
+        let suffix = data.dropped ? ' [DROPPED]' : (data.retransmitted ? ' [RETRANSMIT]' : '');
+        
+        const line = document.createElement('div'); line.className='log-line';
+        line.innerHTML = `<span class="ts">[${ts}]</span> <span class="tag ${cls}">${tag.padEnd(4)}</span> <span style="color:${typeColor}">${data.type}${suffix}</span> ${data.sender} -> ${data.receiver}`;
+        logBody.appendChild(line);
+    });
+    logBody.scrollTop = logBody.scrollHeight;
+}
+
+
 
 /* ===================== INIT ===================== */
 function tickClock(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-GB'); }

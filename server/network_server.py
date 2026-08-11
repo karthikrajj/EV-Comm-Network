@@ -618,6 +618,8 @@ class NetworkServer:
                         # Reroute any active routes going through this junction
                         self._reroute_affected(jnc_id)
                 elif jnc_id in self.graph.down_nodes:
+                    if hasattr(self, 'manual_down_nodes') and jnc_id in self.manual_down_nodes:
+                        continue
                     # Junction came back!
                     logger.info(f"✅ Junction {jnc_id} is back UP")
                     self.graph.mark_up(jnc_id)
@@ -805,10 +807,17 @@ class NetworkServer:
                 self.degraded_nodes.add(target)
                 emit_event("node_degraded", {"junction": target})
                 logger.warning(f"CHAOS: {target} degraded to 50% packet loss.")
-        elif action == "flood_requests":
+        elif action == "flood":
+            import random
+            from core.protocol import PRIORITY_STABLE, PRIORITY_URGENT, PRIORITY_CRITICAL
+            junctions = [j for j in self.graph.adjacency.keys() if j.startswith("J") and j not in self.graph.down_nodes]
+            if not junctions:
+                junctions = ["J1", "J2", "J3", "J4", "J5"]
             for _ in range(5):
-                origin = random.choice(["J1", "J2", "J3", "J4"])
-                self.inject_dashboard_request(origin, "STABLE")
+                origin = random.choice(junctions)
+                priority = random.choice([PRIORITY_STABLE, PRIORITY_STABLE, PRIORITY_URGENT, PRIORITY_CRITICAL])
+                self.inject_dashboard_request(origin, priority)
+            logger.info("[DASHBOARD] Injected flood of 5 requests")
 
     # ── Start / Stop ─────────────────────────────────────────────────────────
 
