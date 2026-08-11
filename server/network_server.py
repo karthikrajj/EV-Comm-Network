@@ -129,6 +129,7 @@ class NetworkServer:
         
         self.dashboard_congestion = 0
         self.degraded_nodes = set()
+        self.manual_down_nodes = set()
         self.processed_requests = set()
 
         self.running = False
@@ -583,6 +584,8 @@ class NetworkServer:
                 packet = json.loads(data.decode("utf-8"))
                 if packet.get("type") == MSG_HEARTBEAT:
                     jnc_id = packet["sender"]
+                    if hasattr(self, 'manual_down_nodes') and jnc_id in self.manual_down_nodes:
+                        continue
                     self.last_heartbeat[jnc_id] = time.time()
                     upsert_junction(jnc_id, "UP")
                     log_packet(
@@ -751,12 +754,14 @@ class NetworkServer:
 
     def toggle_node_from_dashboard(self, node_id: str):
         if node_id in self.graph.down_nodes:
+            self.manual_down_nodes.discard(node_id)
             self.graph.mark_up(node_id)
             from core.database import upsert_junction
             upsert_junction(node_id, "UP")
             emit_event("node_up", {"junction": node_id})
             logger.info(f"[DASHBOARD] Toggled {node_id} UP")
         else:
+            self.manual_down_nodes.add(node_id)
             self.graph.mark_down(node_id)
             from core.database import mark_junction_down
             mark_junction_down(node_id)
@@ -784,6 +789,7 @@ class NetworkServer:
         self.graph.clear_congestion("J2", "J3")
         self.dashboard_congestion = 0
         self.degraded_nodes.clear()
+        self.manual_down_nodes.clear()
         self.active_routes.clear()
         self.ambulance_positions.clear()
         self.request_queue.clear()
